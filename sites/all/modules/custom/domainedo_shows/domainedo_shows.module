@@ -339,7 +339,8 @@ function domainedo_shows_node_view_alter(&$build) {
 function domainedo_shows_node_view($node, $view_mode, $langcode) {
 
   /*dpm($view_mode); */
-  if($node->content['body']['#bundle'] == "show" && $view_mode == "full") {
+//  if($node->content['body']['#bundle'] == "show" && $view_mode == "full") {
+  if($view_mode == "full" && $node->content['body']['#bundle'] == "show") {
     $wrapper = entity_metadata_wrapper('node', $node->vid);
     $age = $wrapper->field_minimum_age->value();
     $suffix = "ans";
