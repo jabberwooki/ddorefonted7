@@ -758,7 +758,7 @@ function domainedo_mapado_node_view($node, $view_mode, $langcode) {
       // et vérifier que sa valeur soit "onSale".
 
       // S'il n'est pas en vente, on cache le bouton RESERVER.
-      if ($result_data->availabilityStatus != 'onSale') {
+      if (!isset($result_data->availabilityStatus) || $result_data->availabilityStatus != 'onSale') {
         $is_on_sale = FALSE;
       }
       // Sinon il faut vérifier qu'il y a vente sur le canal domainedo (= site web)
