@@ -47,6 +47,15 @@ function calendar_admin_settings() {
     '#description' => t('To try the Colorbox settings, choose the option to add Colorbox settings to the calendar templates. Install and enable the Colorbox module, following the instructions on the Colorbox project page, then create a new calendar from a template using any date field in the Node base table. The calendar will be set up to display the calendar items in a Colorbox.'),
     );
 
+  $form['calendar_provide_views_templates'] = array(
+    '#title' => t('Provide Views templates for calendar'),
+    '#type' => 'radios',
+    '#options' => array(0 => t('No'), 1 => t('Yes')),
+    '#default_value' => variable_get('calendar_provide_views_templates', 1),
+    '#description' => t("Views calendar templates are created for every date field by default, see !url. You can disable this to improve Views UI performance.",
+      array('!url' => l(t('Views templates'), 'admin/structure/views/add-template'))),
+  );
+
   return system_settings_form($form);
 }
 
@@ -169,6 +178,9 @@ function calendar_menu_local_tasks_alter(&$data, $router_item, $root_path) {
         // The add new content page would redirect to the new event
         // if we did not override that here. This way they will
         // redirect back to the calendar.
+	if (!isset($item['localized_options'])) {
+          $item['localized_options'] = array();
+        }
         $item['localized_options'] += array('query' => array());
         $item['localized_options']['query'] += drupal_get_destination();
         if (array_key_exists('access', $item) && $item['access']) {
@@ -273,7 +285,7 @@ function calendar_node_view($node, $view_mode, $langcode) {
       'attributes' => array('title' => t('View the calendar.')),
     );
     $node->content['links']['calendar'] = array(
-      '#theme' => 'links__node__caledar',
+      '#theme' => 'links__node__calendar',
       '#links' => $links,
       '#attributes' => array('class' => array('links', 'inline')),
     );
