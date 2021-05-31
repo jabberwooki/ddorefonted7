@@ -342,9 +342,14 @@ function domainedo_shows_node_view_alter(&$build) {
 
 function domainedo_shows_node_view($node, $view_mode, $langcode) {
 
-  /*dpm($view_mode); */
+//  Ligne originale
 //  if($node->content['body']['#bundle'] == "show" && $view_mode == "full") {
-  if($view_mode == "full" && $node->content['body']['#bundle'] == "show") {
+
+//  Ligne modifiée une première fois
+//  if($view_mode == "full" && $node->content['body']['#bundle'] == "show") {
+
+//  Ligne modifiée une seconde fois pour éviter le bug "Undefined index: body in domainedo_shows_node_view() (line 349...""  if($view_mode == "full" && $node->type == "show") {
+  if($view_mode == "full" && $node->type == "show") {
     $wrapper = entity_metadata_wrapper('node', $node->vid);
     $age = $wrapper->field_minimum_age->value();
     $suffix = "ans";
