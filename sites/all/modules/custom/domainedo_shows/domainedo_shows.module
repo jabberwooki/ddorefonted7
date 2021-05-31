@@ -182,10 +182,14 @@ function domainedo_shows_node_view_alter(&$build) {
               $structure = node_load($structure['target_id']);
               $structure_titles[] = $structure->title;
 
-              $structure_type = taxonomy_term_load($structure->field_structure_type['und'][0]['tid'])->name;
-              // il suffit qu'une seule structure ne soit pas un "artiste" seul pour
-              // que l'on considère que c'est une "organisation" au sens de https://schema.org/Event
-              if($structure_type != "Artiste seul") $has_structure_organization = true;
+              if (!empty($structure->field_structure_type)) {
+                $structure_type = taxonomy_term_load($structure->field_structure_type['und'][0]['tid'])->name;
+                // il suffit qu'une seule structure ne soit pas un "artiste" seul pour
+                // que l'on considère que c'est une "organisation" au sens de https://schema.org/Event
+                if ($structure_type != "Artiste seul") {
+                  $has_structure_organization = TRUE;
+                }
+              }
             }
             $structure_type = ($has_structure_organization) ? "Organization" : "Person";
             $structure_titles_string = implode(' / ', $structure_titles);
