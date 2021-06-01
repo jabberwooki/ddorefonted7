@@ -1,10 +1,9 @@
 <?php
 
-
 /**
  * @file
  * Implementation of Twitter REST API 1.1.
- * https://dev.twitter.com/docs/api/1.1
+ * https://dev.twitter.com/docs/api/1.1.
  */
 
 /**
@@ -12,13 +11,16 @@
  */
 class Scald_Twitter_Oauth_connector_Exception extends Exception {
 
-  public function __construct($message) {  
-    watchdog('scald_twitter', $message, array(), WATCHDOG_WARNING );
+  /**
+   *
+   */
+  public function __construct($message) {
+    watchdog('scald_twitter', $message, array(), WATCHDOG_WARNING);
   }
-  
+
 }
 /**
- * API implementation class
+ * API implementation class.
  */
 class Scald_Twitter_oauth_request {
   private $oauth_access_token;
@@ -34,7 +36,7 @@ class Scald_Twitter_oauth_request {
    * Create the API access object. Requires an array of settings::
    * oauth access token, oauth access token secret, consumer key, consumer secret
    * These are all available by creating your own application on dev.twitter.com
-   * Requires the cURL library
+   * Requires the cURL library.
    *
    * @param array $settings
    */
@@ -59,7 +61,8 @@ class Scald_Twitter_oauth_request {
   /**
    * Set postfields array, example: array('screen_name' => 'J7mbo')
    *
-   * @param array $array Array of parameters to send to API
+   * @param array $array
+   *   Array of parameters to send to API.
    *
    * @return TwitterAPIExchange Instance of self for method chaining
    */
@@ -74,9 +77,10 @@ class Scald_Twitter_oauth_request {
   }
 
   /**
-   * Set getfield string, example: '?screen_name=J7mbo'
+   * Set getfield string, example: '?screen_name=J7mbo'.
    *
-   * @param string $string Get key and value pairs as string
+   * @param string $string
+   *   Get key and value pairs as string.
    *
    * @return \TwitterAPIExchange Instance of self for method chaining
    */
@@ -114,10 +118,13 @@ class Scald_Twitter_oauth_request {
 
   /**
    * Build the Oauth object using params set in construct and additionals
-   * passed to this method. For v1.1, see: https://dev.twitter.com/docs/api/1.1
+   * passed to this method. For v1.1, see: https://dev.twitter.com/docs/api/1.1.
    *
-   * @param string $url The API url to use. Example: https://api.twitter.com/1.1/search/tweets.json
-   * @param string $requestMethod Either POST or GET
+   * @param string $url
+   *   The API url to use. Example: https://api.twitter.com/1.1/search/tweets.json.
+   * @param string $requestMethod
+   *   Either POST or GET.
+   *
    * @return \TwitterAPIExchange Instance of self for method chaining
    */
   public function buildOauth($url, $requestMethod) {
@@ -131,13 +138,13 @@ class Scald_Twitter_oauth_request {
     $oauth_access_token_secret = $this->oauth_access_token_secret;
 
     $oauth = array(
-        'oauth_consumer_key' => $consumer_key,
-        'oauth_nonce' => md5(time()),
-        'oauth_signature_method' => 'HMAC-SHA1',
-        'oauth_token' => $oauth_access_token,
-        'oauth_timestamp' => time(),
-        'oauth_version' => '1.0'
-        );
+      'oauth_consumer_key' => $consumer_key,
+      'oauth_nonce' => md5(time()),
+      'oauth_signature_method' => 'HMAC-SHA1',
+      'oauth_token' => $oauth_access_token,
+      'oauth_timestamp' => time(),
+      'oauth_version' => '1.0',
+    );
 
     $getfield = $this->getGetfield();
 
@@ -152,7 +159,7 @@ class Scald_Twitter_oauth_request {
     $base_info = $this->buildBaseString($url, $requestMethod, $oauth);
     $composite_key = rawurlencode($consumer_secret) . '&' . rawurlencode($oauth_access_token_secret);
     $oauth_signature = base64_encode(hash_hmac('sha1', $base_info, $composite_key, TRUE));
-    //$oauth['oauth_signature'] = rawurlencode($oauth_signature);
+    // $oauth['oauth_signature'] = rawurlencode($oauth_signature);
     $oauth['oauth_signature'] = $oauth_signature;
     ksort($oauth);
 
@@ -163,9 +170,10 @@ class Scald_Twitter_oauth_request {
   }
 
   /**
-   * Perform the acual data retrieval from the API
+   * Perform the acual data retrieval from the API.
    *
-   * @param boolean $return If true, returns data.
+   * @param bool $return
+   *   If true, returns data.
    *
    * @return json If $return param is true, returns json data.
    */
@@ -180,12 +188,12 @@ class Scald_Twitter_oauth_request {
     $postfields = $this->getPostfields();
 
     $options = array(
-        CURLOPT_HTTPHEADER => $header,
-        CURLOPT_HEADER => FALSE,
-        CURLOPT_HTTPGET => TRUE,
-        CURLOPT_URL => $this->url,
-        CURLOPT_RETURNTRANSFER => TRUE,
-        );
+      CURLOPT_HTTPHEADER => $header,
+      CURLOPT_HEADER => FALSE,
+      CURLOPT_HTTPGET => TRUE,
+      CURLOPT_URL => $this->url,
+      CURLOPT_RETURNTRANSFER => TRUE,
+    );
 
     if (!is_null($postfields)) {
       $options[CURLOPT_POSTFIELDS] = $postfields;
@@ -196,12 +204,23 @@ class Scald_Twitter_oauth_request {
       }
     }
 
+    if (variable_get('proxy_server')) {
+      $options[CURLOPT_PROXY] = variable_get('proxy_server') . ':' . variable_get('proxy_port');
+      if (variable_get('proxy_username')) {
+        $options[CURLOPT_PROXYUSERPWD] = variable_get('proxy_username');
+        $options[CURLOPT_PROXYUSERPWD] .= (variable_get('proxy_password')) ? ':' . variable_get('proxy_password') : '';
+      }
+      if (variable_get('proxy_user_agent')) {
+        $options[CURLOPT_USERAGENT] = variable_get('proxy_user_agent');
+      }
+    }
+
     $feed = curl_init();
     curl_setopt_array($feed, $options);
     $json = curl_exec($feed);
     curl_close($feed);
-    if ($json) { 
-      return $json; 
+    if ($json) {
+      return $json;
     }
     else {
       throw new Scald_Twitter_Oauth_connector_Exception('Cannot read tweets from twitter');
@@ -209,7 +228,7 @@ class Scald_Twitter_oauth_request {
   }
 
   /**
-   * Private method to generate the base string used by cURL
+   * Private method to generate the base string used by cURL.
    *
    * @param string $baseURI
    * @param string $method
@@ -230,9 +249,10 @@ class Scald_Twitter_oauth_request {
   }
 
   /**
-   * Private method to generate authorization header used by cURL
+   * Private method to generate authorization header used by cURL.
    *
-   * @param array $oauth Array of oauth data generated by buildOauth()
+   * @param array $oauth
+   *   Array of oauth data generated by buildOauth()
    *
    * @return string $return Header used by cURL for request
    */
@@ -249,5 +269,5 @@ class Scald_Twitter_oauth_request {
     $return .= implode(', ', $values);
     return $return;
   }
-}
 
+}
